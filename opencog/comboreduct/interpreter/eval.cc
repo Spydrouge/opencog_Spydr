@@ -30,7 +30,8 @@ namespace opencog { namespace combo {
 
 using namespace std;
 
-combo_tree eval_procedure_tree(const vertex_seq& bmap, combo::combo_tree::iterator it)
+combo_tree eval_procedure_tree(const vertex_seq& bmap,
+                               combo::combo_tree::iterator it)
 {
     // sanity checks
     if (!is_procedure_call(*it)) {
@@ -64,10 +65,11 @@ combo_tree eval_procedure_tree(const vertex_seq& bmap, combo::combo_tree::iterat
     cout << body << endl;
 
     vertex_seq args;
-    //copy(body.begin(), body.end(), back_inserter(args));
+    // copy(body.begin(), body.end(), back_inserter(args));
 
-    // evaluate the arguments to the function (their variables are in the current scope, i.e. bmap)
-    for (combo_tree::sibling_iterator arg_it = it.begin(); arg_it != it.end(); arg_it++) {
+    // evaluate the arguments to the function (their variables are in
+    // the current scope, i.e. bmap)
+    for (combo_tree::sibling_iterator arg_it = it.begin(); arg_it != it.end(); ++arg_it) {
         combo_tree arg_result(eval_throws_tree(bmap, arg_it));
 
         OC_ASSERT(arg_it.number_of_children() == 0, "functions cannot have list arguments");
@@ -103,8 +105,9 @@ vertex eval_throws_binding(const vertex_seq& bmap,
 
     combo_tree ret(eval_throws_tree(bmap, it));
     // Make sure it has no children.
-    OC_ASSERT(ret.number_of_children(ret.begin()) == 0, "Invalid use of eval_throws_binding:"
-        "expression evaluates to a whole combo_tree, not just one vertex");
+    OC_ASSERT(ret.number_of_children(ret.begin()) == 0,
+              "Invalid use of eval_throws_binding:"
+              "expression evaluates to a whole combo_tree, not just one vertex");
 
     return *ret.begin();
 }
@@ -335,7 +338,7 @@ combo_tree eval_throws_tree(const vertex_seq& bmap,
             combo_tree tr(id::list);
             pre_it loc = tr.begin();
 
-            for (sib_it sib = it.begin(); sib != it.end(); sib++) {
+            for (sib_it sib = it.begin(); sib != it.end(); ++sib) {
                 // tr.append_child(loc, eval_throws_tree(bmap, sib).begin());
                 combo_tree rr = eval_throws_tree(bmap, sib);
                 tr.append_child(loc, rr.begin());
@@ -382,7 +385,7 @@ combo_tree eval_throws_tree(const vertex_seq& bmap,
 
             combo_tree tr(id::list);
             pre_it loc = tr.begin();
-            for (; sib != top.end(); sib++) {
+            for (; sib != top.end(); ++sib) {
                 combo_tree rest = eval_throws_tree(bmap, sib);
                 tr.append_child(loc, rest.begin());
             }
@@ -403,11 +406,11 @@ combo_tree eval_throws_tree(const vertex_seq& bmap,
             combo_tree ht = eval_throws_tree(bmap, head);
             tr.append_child(loc, ht.begin());
 
-            head++;
+            ++head;
             combo_tree rest = eval_throws_tree(bmap, head);
 
             sib_it lst = rest.begin();
-            for (sib_it sib = lst.begin(); sib != lst.end(); sib++)
+            for (sib_it sib = lst.begin(); sib != lst.end(); ++sib)
                 // tr.append_child(loc, eval_throws_tree(bmap, sib).begin());
                 tr.append_child(loc, (pre_it) sib);
 
@@ -420,9 +423,9 @@ combo_tree eval_throws_tree(const vertex_seq& bmap,
             // base case: foldr(f v list) = v
             // i.e. list is empty list.
             sib_it itend = tr.begin().end();
-            itend--;
+            --itend;
             if (itend.begin() == itend.end()) {
-                itend--;
+                --itend;
                 return eval_throws_tree(bmap, itend);
             }
 
@@ -471,9 +474,9 @@ combo_tree eval_throws_tree(const vertex_seq& bmap,
             // base case: foldl(f v list) = v
             // i.e. list is empty list.
             sib_it itend = tr.begin().end();
-            itend--;
+            --itend;
             if (itend.begin() == itend.end()) {
-                itend--;
+                --itend;
                 return eval_throws_tree(bmap, itend);
             }
 
@@ -483,7 +486,7 @@ combo_tree eval_throws_tree(const vertex_seq& bmap,
             sib_it lst_it = lst.begin();
             sib_it tr_it = tr.begin();
             tr.erase(itend);
-            itend--;
+            --itend;
             tr.erase(itend);
 	    
             combo_tree rec(f);
@@ -525,8 +528,8 @@ combo_tree eval_throws_tree(const vertex_seq& bmap,
             combo_tree exp_tr(lambda_it);
 
             vector<vertex> al; // list of arguments
-            tr_it++;
-            for(; tr_it!=tr.begin().end(); tr_it++){
+            ++tr_it;
+            for(; tr_it!=tr.begin().end(); ++tr_it){
                 al.push_back(*tr_it);
             }
             //set_bindings(exp_tr, exp_tr.begin(), al, explicit_arity(exp_tr));

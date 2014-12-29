@@ -103,7 +103,6 @@ void ImportanceSpreadingAgent::spreadImportance()
 // to avoid retrieving them twice 
 int ImportanceSpreadingAgent::sumTotalDifference(Handle source, HandleSeq& links)
 {
-    std::vector<Handle> targets;
     int totalDifference = 0;
     // sum total difference
     foreach(Handle handle, links) {
@@ -212,7 +211,7 @@ void ImportanceSpreadingAgent::spreadAtomImportance(Handle h)
     if (allLinksSpread) {
         log->fine("  +Spreading across all links. Found %d", linksVector.size());
     } else {
-      std::remove_if(linksVector.begin(),linksVector.end(),isHLPred);
+      linksVector.erase(std::remove_if(linksVector.begin(),linksVector.end(),isHLPred), linksVector.end());
       log->fine("  +Hebbian links found %d", linksVector.size());
     }
 

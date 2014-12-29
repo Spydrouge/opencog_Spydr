@@ -10,6 +10,7 @@ LINK_DIRECTORIES(
 
 LINK_LIBRARIES(
 	viterbi
+	lg-dict
 	nlp-types
 	atomspace
 	query

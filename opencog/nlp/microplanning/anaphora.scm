@@ -1,6 +1,6 @@
 ; loading additional dependency
-(load-scm-from-file "../opencog/nlp/microplanning/helpers.scm")
-(load-scm-from-file "../opencog/nlp/microplanning/anaphora-nouns-list.scm")
+(load "helpers.scm")
+(load "anaphora-nouns-list.scm")
 
 ; =======================================================================
 ; Main anaphora insertion functions
@@ -34,23 +34,45 @@
 				        (set! result-ni (find-by-proc subset (lambda (ni) (= (get-atom-index ni) curr-atom-index))))
 					(set! curr-atom-index (+ 1 curr-atom-index))
 					
-				      	; check if the noun should be replace with pronoun
-				      	(cond ((and result-ni (is-pronoun-safe? result-ni))
-				      		; XXX do we need this new node to inherit from original?
-				      		(cog-new-node (cog-type atom)
-			      				(get-modified-pronomial result-ni forms)
-			      				(cog-tv atom))
-				      	      )
-				      	      (else
-				      		atom
-				      	      )				      	
-				      	)
+					(cond (result-ni
+						; always prefer pronoun
+						; XXX possibly better algorithm for choosing between pronoun vs lexical noun phrase?
+						(if (is-pronoun-safe? result-ni)
+							(let ((pronoun (get-modified-pronomial result-ni forms)))
+								; do not create a new node if the possessed can become a pronoun
+								(if (equal? pronoun 'possessed-link-cancel)
+									'()
+									(cog-new-node (cog-type atom)
+						      					(get-modified-pronomial result-ni forms)
+							 				(cog-tv atom)
+							 		)
+							 	)
+							)
+					 		; only attempt to get lexical noun if it is safe
+							(if (not (is-lexical-safe? result-ni))
+								atom
+					 			; check if associations already has lexical choice
+					 			(if (get-association n-lst result-ni)
+					 				(get-lexical-node (get-association n-lst result-ni))
+					 				(get-lexical-node result-ni)
+					 			)
+					 		)
+						)
+					      )
+					      (else
+						atom
+					      )
+					)
 				      )
 				)
 			)
 			(define new-oset (map-in-order change-old old-oset))
 			
-			(apply cog-new-link (append (list (cog-type sublink) (cog-tv sublink)) new-oset))
+			; do not create the link if it is a "possessed" link and can be removed
+			(if (any null? new-oset)
+				'()
+				(apply cog-new-link (append (list (cog-type sublink) (cog-tv sublink)) new-oset))
+			)
 		)
 		
 		; if subset empty, return original link (ie. the link has no noun)
@@ -71,6 +93,6 @@
 	(populate-nouns-list n-lst chunks)
 	(map clone-chunk-with-pronoun (circular-list n-lst) chunks (iota (length chunks)) forms-list)
 
-	; TODO also insert anaphora for missing subjects/objects, nominal anaphora
+	; TODO also insert anaphora for missing subjects/objects
 )
 

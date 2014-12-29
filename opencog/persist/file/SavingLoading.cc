@@ -276,12 +276,14 @@ void SavingLoading::load(const char *fileName,
     size_t rc = fread(&format, sizeof(char), 1, f);
 
     if (! (rc == 1 && format & FULL_NETWORK_DUMP)) {
+        fclose(f);
         throw RuntimeException(TRACE_INFO, "SavingLoading - invalid file format '%c'.", format);
     }
 
     // reads the total number of atoms. Just an idea for now.
     int atomCount = 0;
     if ( fread(&atomCount, sizeof(int), 1, f) != 1 ) {
+        fclose(f);
         throw RuntimeException(TRACE_INFO, "SavingLoading - failed to read.");
     }
 
@@ -688,7 +690,7 @@ void SavingLoading::saveRepositories(FILE *f)
     unsigned int size = repositories.size();
     fwrite(&size, sizeof(unsigned int), 1, f);
 
-    for (RepositoryHash::const_iterator it = repositories.begin(); it != repositories.end(); it++) {
+    for (RepositoryHash::const_iterator it = repositories.begin(); it != repositories.end(); ++it) {
         const std::string& repId = it->first;
         int idSize = repId.length() + 1;
         fwrite(&idSize, sizeof(int), 1, f);
@@ -741,7 +743,7 @@ void SavingLoading::clearRepositories()
 {
     logger().fine("SavingLoading::clearRepositories");
     for (RepositoryHash::const_iterator it = repositories.begin();
-            it != repositories.end(); it++) {
+            it != repositories.end(); ++it) {
 
         it->second->clear();
     }

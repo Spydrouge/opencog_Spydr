@@ -872,7 +872,6 @@ void reduce_type_tree(type_tree& tt, type_tree_pre_it it,
     else if (*it == id::union_type) {
         OC_ASSERT(!it.is_childless(),
                           "union_type must have at least a child");
-        type_tree_seq utt;
         //apply reduce recursively to the children of the union
         for (type_tree_sib_it sib = it.begin(); sib != it.end(); ++sib) {
             reduce_type_tree(tt, type_tree_pre_it(sib), arg_types,
@@ -906,7 +905,7 @@ void reduce_type_tree(type_tree& tt, type_tree_pre_it it,
         // Usually, an arg_list will have only one type in it.
         // However, the cond statement can have a repeated list of two
         // alternating types.
-        for (type_tree_pre_it tit = it.begin(); tit != it.end(); tit++) {
+        for (type_tree_pre_it tit = it.begin(); tit != it.end(); ++tit) {
             reduce_type_tree(tt, tit, arg_types, tr, ct_it, proc_name);
         }
     }
